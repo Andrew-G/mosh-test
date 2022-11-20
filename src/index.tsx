@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import HeroBanner from './HeroBanner';
 import reportWebVitals from './reportWebVitals';
 import { ThemeProvider } from "styled-components/macro";
 import theme from './utils/theme';
+import Home from './Home';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -12,7 +12,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <HeroBanner />
+      <Home />
     </ThemeProvider>
   </React.StrictMode>
 );

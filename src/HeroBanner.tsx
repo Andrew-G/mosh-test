@@ -9,7 +9,14 @@ import checkIcon from './img/check.png'
 import chevronUpIcon from './img/chevron-up.png'
 import chevronDownIcon from './img/chevron-down.png'
 
-const HERO_ITEM_META: any = {
+// Extra item information
+type HeroItemMetaData = {
+  imgUrl: string,
+  title: string,
+  buttonText: string,
+  buttonUrl: string,
+};
+const HERO_ITEMS_META: { [key: string]: HeroItemMetaData } = {
   "consultation": {
     imgUrl: consultationImage,
     title: 'Free Online Doctor Consultation',
@@ -23,8 +30,9 @@ const HERO_ITEM_META: any = {
     buttonUrl: 'https://www.getmosh.com.au/booking/mental_health',
   },
 };
-
-const HERO_ITEM_DATA: any = {
+// Backup item data for when API exceeds daily request limit
+type HeroItemData = { [key: string]: string[] };
+const HERO_ITEMS_DATA: HeroItemData = {
   "consultation": [
     'Personalised treatment options',
     'Video consults and easy check-ins',
@@ -36,22 +44,7 @@ const HERO_ITEM_DATA: any = {
     'Confidential online therapy sessions',
   ],
 };
-const HeroWrapper = styled.div`
-  background-color: ${props => props.theme.color.background};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: ${props => props.theme.color.text};
-  @media ${props => props.theme.breakpoints.mobile} {
-    padding: 40px 16px 32px;
-  }
-  @media ${props => props.theme.breakpoints.tablet} {
-    padding: 48px 32px 32px;
-  }
-  @media ${props => props.theme.breakpoints.desktop} {
-    padding: 64px 32px 32px;
-  }
-`;
+
 const HeroContainer = styled.div`
   @media ${props => props.theme.breakpoints.mobile} {
     display: flex;
@@ -282,7 +275,8 @@ const ErrorMessage = styled.p`
   margin: 0;
 `;
 
-const HeroItem = ({ itemKey, items }: { itemKey: string, items: string[] }) => {
+// Single point of sale item within the hero banner
+const HeroItem = ({ itemKey, listItems }: { itemKey: string, listItems: string[] }) => {
   const { width = 0 } = useWindowSize();
   const [open, setOpen] = useState(false);
   const handleToggleOpen = () => {
@@ -292,13 +286,13 @@ const HeroItem = ({ itemKey, items }: { itemKey: string, items: string[] }) => {
   return (
     <HeroItemContainer className={open ? 'is-open' : undefined}>
       {/* Image */}
-      <HeroItemImage src={HERO_ITEM_META[itemKey].imgUrl} alt={itemKey} onClick={handleToggleOpen}/>
+      <HeroItemImage src={HERO_ITEMS_META[itemKey].imgUrl} alt={itemKey} onClick={handleToggleOpen}/>
       {/* Expandable Title */}
       <HeroItemTitle
         onClick={handleToggleOpen}
         className={open ? 'is-open' : undefined}
       >
-        {HERO_ITEM_META[itemKey].title}
+        {HERO_ITEMS_META[itemKey].title}
         {width <= breakpoints.tablet ? (
           <img
             className="open-icon"
@@ -310,23 +304,24 @@ const HeroItem = ({ itemKey, items }: { itemKey: string, items: string[] }) => {
       {/* List Items */}
       {width >= breakpoints.tablet || open ? (
         <HeroItemList>
-          {items.map(i => <HeroItemListItem>{i}</HeroItemListItem>)}
+          {listItems.map(i => <HeroItemListItem>{i}</HeroItemListItem>)}
         </HeroItemList>
       ) : null}
       {/* Action button */}
-      <HeroItemButton href={HERO_ITEM_META[itemKey].buttonUrl}>
-        {HERO_ITEM_META[itemKey].buttonText}
+      <HeroItemButton href={HERO_ITEMS_META[itemKey].buttonUrl}>
+        {HERO_ITEMS_META[itemKey].buttonText}
       </HeroItemButton>
     </HeroItemContainer>
   )
 }
 
-
+// The hero banner
 function HeroBanner() {
   const [error, setError] = useState<string | null>(null);
-  const [items, setItems] = useState<any>(undefined);
+  const [items, setItems] = useState<HeroItemData | undefined>(undefined);
   const { width = 0 } = useWindowSize();
 
+  // Gets item data
   const getItems = useCallback(async () => {
     setError(null);
     try {
@@ -340,47 +335,45 @@ function HeroBanner() {
     } catch (error: any) {
       const newError = error?.response?.data || 'Something went wrong';
       setError(newError);
-      setItems([]);
+      setItems(undefined);
 
       // For the purpose of being able to continue to work on this test
-      // after the beeceptor api surpassed it's daily request limit
+      // after the beeceptor api exceeds daily request limit
       // I am clearing the error and manually setting the data 
       setTimeout(() => {
         setError(null);
-        setItems(HERO_ITEM_DATA);
-      }, 500);
+        setItems(HERO_ITEMS_DATA);
+      }, 3000);
     }
   }, []);
   useEffect(() => { getItems() }, [getItems]);
 
   return (
-    <HeroWrapper>
-      <HeroContainer>
-        {/* Header */}
-        <HeroHeader>
-          {/* Title */}
-          <HeroTitle>Get back on track</HeroTitle>
-          {/* Subtitle */}
-          {width < breakpoints.mobile ? (
-            <Subtitle>Treatment plan in 24 hours. Treat anxiety, depression & more</Subtitle>
-          ) : (
-            <Subtitle>Treatment plan in 24 hours.<br/>Treat anxiety, depression & more</Subtitle>
-          )}
-        </HeroHeader>
-        {/* Point of sale items */}
-        <HeroItems>
-          {error ? (
-            <ErrorMessage>{error}</ErrorMessage>
-          ) : (
-            items !== undefined ? (
-              Object.keys(items).map(key => (
-                <HeroItem key={key} itemKey={key} items={items[key]}/>
-              ))
-            ) : null
-          )}
-        </HeroItems>
-      </HeroContainer>
-    </HeroWrapper>
+    <HeroContainer>
+      {/* Header */}
+      <HeroHeader>
+        {/* Title */}
+        <HeroTitle>Get back on track</HeroTitle>
+        {/* Subtitle */}
+        {width < breakpoints.mobile ? (
+          <Subtitle>Treatment plan in 24 hours. Treat anxiety, depression & more</Subtitle>
+        ) : (
+          <Subtitle>Treatment plan in 24 hours.<br/>Treat anxiety, depression & more</Subtitle>
+        )}
+      </HeroHeader>
+      {/* Point of sale items */}
+      <HeroItems>
+        {error ? (
+          <ErrorMessage>{error}</ErrorMessage>
+        ) : (
+          items !== undefined ? (
+            Object.keys(items).map(key => (
+              <HeroItem key={key} itemKey={key} listItems={items[key]}/>
+            ))
+          ) : null
+        )}
+      </HeroItems>
+    </HeroContainer>
   );
 }
 
