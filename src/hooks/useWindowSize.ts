@@ -5,6 +5,7 @@ type WindowDimensions = {
   height: number | undefined,
 }
 
+// Provides width/height of current browser window
 const useWindowSize = () => {
   const [windowSize, setWindowSize] = useState<WindowDimensions>({
     width: undefined,

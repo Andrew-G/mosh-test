@@ -91,6 +91,7 @@ const HeroTitle = styled.h2`
   line-height: 120%;
   text-align: center;
   margin: 0;
+  margin-bottom: 8px;
   @media ${props => props.theme.breakpoints.mobile} {
     font-size: 32px;
   }
@@ -134,7 +135,7 @@ const HeroItems = styled.div`
   @media ${props => props.theme.breakpoints.desktop} {
     display: flex;
     flex-direction: column;
-    gap 24px;
+    gap 32px;
   }
 `;
 const HeroItemContainer = styled.div`
@@ -217,6 +218,9 @@ const HeroItemList = styled.div`
   flex-direction: column;
   gap: 8px;
   margin-bottom: 8px;
+  @media ${props => props.theme.breakpoints.desktop} {
+    margin-bottom: 0px;
+  }
 `;
 const HeroItemListItem = styled.div`
   text-align: left;
@@ -255,6 +259,7 @@ const HeroItemButton = styled.a`
   width: 100%;
   text-decoration: none;
   text-align: center;
+  box-sizing: border-box; 
   @media ${props => props.theme.breakpoints.mobile} {
     width: unset;
     max-width: 100%;
